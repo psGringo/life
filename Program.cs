@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
+
 
 namespace Life
 {
@@ -10,20 +12,58 @@ namespace Life
     {
         static void Main(string[] args)
         {
-            Life life = new Life();
-            Console.WriteLine("Enter width");
-            life.Width = Convert.ToInt32(Console.ReadLine());
-            Console.WriteLine("Enter height");
-            life.Height = Convert.ToInt32(Console.ReadLine());
+            Life life = new Life(20, 10);
+            
 
-            //life.initFillAllZero();
-            //life.initFill3PointsInLine();
-            life.initFill3Square();
-            life.printArray();
-            life.IsLonely(1, 1);
+            string q="N";
+
+            do
+            {
+
+                int i = 1;
+                int MaxCount = 100;
+
+                //life.randomInit();
+                life.initSomeColony();
+                //life.showArray(life.CurrentArray);
+                //life.initFill3PointsInLine(); // test case
+                //life.initFillSquare(); // test case
+              
+
+                do
+                {
+                    Console.Clear();
+                    Console.WriteLine("Game life started");
+                    Console.WriteLine("Stas games development inc. All right reserved");
+
+                    Console.WriteLine();
+                    Console.WriteLine("step "+i.ToString()+"/"+MaxCount.ToString());
+                    if (!life.Next())
+                    {
+                        Console.WriteLine("Apocalypsis happened");
+                        break;
+                    }
+
+                    for (int k = 0; k < life.W; k++) Console.Write("-");
+                    Console.WriteLine();
+                    life.showArray(life.NextArray);
+                    Console.WriteLine();
+                    for (int k = 0; k < life.W; k++) Console.Write("-");
+                    i++;
+                    Thread.Sleep(200);
+
+                }
+                while (i != MaxCount+1);
+
+                Console.WriteLine();
+                Console.WriteLine("Game over");
+                Console.WriteLine("One more game Y/N ?");
+                q = Convert.ToString(Console.ReadLine());
+            }
+            while (q == "Y");
 
 
-
+            Console.WriteLine("Stas games development inc. All right reserved");
             Console.Read();
 
         }
@@ -32,87 +72,59 @@ namespace Life
 
     class Life
     {
-        public int Width { get; set; }
-        public int Height { get; set; }
+        private char Alive = '*';
+        private char Dead = ' ';
 
-        public int[,] LifeArray;
-        public int[,] LifeArrayNextStep;
+        public int W { get; set; }
+        public int H { get; set; }
 
-        public void Scan()
+        public char[,] CurrentArray;
+        public char[,] NextArray;
+        public int[,] NeighboursArray;
+
+
+
+        public Life(int w, int h)
         {
-            for (int i = 0; i < Width; i++)
-            {
-                for (int j = 0; j < Height; j++)
-                {
-                    if (IsLonely(i, j))
-                    {
-                        LifeArrayNextStep[i, j] = 0;
-                    }
+            W = w;
+            H = h;
 
-                    LifeArray[i, j] = 0;
+            // init arrays
+            CurrentArray = new char[H, W];
+            NextArray = new char[H, W];
+            NeighboursArray = new int[H, W];
+
+            // fill them dead
+            for (int i = 0; i < H; i++)
+            {
+                for (int j = 0; j < W; j++)
+                {
+                    CurrentArray[i, j] = Dead;
+                    NextArray[i, j] = Dead;
                 }
 
             }
         }
 
 
-
-        public void initFillAllZero()
+        public bool Next()
         {
+            if (IsApocalypsis()) return false;
 
-            LifeArray = new int[Width, Height];
-
-            for (int i = 0; i < Width; i++)
+            countNeighbours();
+            NextArray = CurrentArray;
+            for (int i = 0; i < H; i++)
             {
-                for (int j = 0; j < Height; j++)
+                for (int j = 0; j < W; j++)
                 {
-                    LifeArray[i, j] = 0;
+                    if ((IsLonely(i, j) || IsTooClose(i, j))) NextArray[i, j] = Dead;
+                    if (IsBirth(i, j)) NextArray[i, j] = Alive;
                 }
 
             }
+            CurrentArray=NextArray;
 
-        }
-
-
-        public void initFill3PointsInLine()
-        {
-
-            initFillAllZero();
-            LifeArray[1, 1] = 1;
-            LifeArray[1, 2] = 1;
-            LifeArray[1, 3] = 1;
-
-        }
-
-        public void initFill3Square()
-        {
-
-            initFillAllZero();
-            LifeArray[1, 1] = 1;
-            LifeArray[1, 2] = 1;
-            LifeArray[1, 3] = 1;
-
-            LifeArray[2, 1] = 1;
-            LifeArray[2, 2] = 1;
-            LifeArray[2, 3] = 1;
-
-            LifeArray[3, 1] = 1;
-            LifeArray[3, 2] = 1;
-            LifeArray[3, 3] = 1;
-
-        }
-
-
-        public void printArray()
-        {
-            for (int i = 0; i < Width; i++)
-            {
-                for (int j = 0; j < Height; j++)
-                {
-                    Console.Write(LifeArray[i, j]);
-                }
-                Console.WriteLine();
-            }
+            return true;
         }
 
 
@@ -120,108 +132,190 @@ namespace Life
 
         public bool IsLonely(int i, int j)
         {
+            return (NeighboursArray[i, j] < 2);
 
-            // 3*3 borders
-            int left = i - 1;
-            int right = i + 1;
-            int top = j - 1;
-            int bottom = j + 1;
-
-            int leftPositive = left;
-            int topPositive = top;
-
-            // cycle
-
-            int AliveNeighboursCount = 0;
-
-            for (int k = left; k <= right; k++)
-            {
-                for (int r = top; r <= bottom; r++)
-                {
-                    if (((LifeArray[k, r] == 1))&&(k>=0)&&(r>=0))//&&((k!= i) && (r!= j)))
-                    {
-                        AliveNeighboursCount++;
-                    }
-                }
-
-
-            }
-
-            //AliveNeighboursCount-= LifeArray[i, j];
-            //Console.WriteLine(AliveNeighboursCount);
-            if (AliveNeighboursCount < 2) return true; else return false;
+            //bool result = false;
+            //result = CountAliveNeighbours(i, j) < 2; // counts not correct...
+            //return result;
         }
-
 
 
         public bool IsTooClose(int i, int j)
         {
-
-            // 3*3 borders
-            int left = i - 1;
-            int right = i + 1;
-            int top = j - 1;
-            int bottom = j + 1;
-
-            int leftPositive = left;
-            int topPositive = top;
-
-            // cycle
-
-            int AliveNeighboursCount = 0;
-
-            for (int k = left; k <= right; k++)
-            {
-                for (int r = top; r <= bottom; r++)
-                {
-                    if (((LifeArray[k, r] == 1)) && (k >= 0) && (r >= 0))//&&((k!= i) && (r!= j)))
-                    {
-                        AliveNeighboursCount++;
-                    }
-                }
-
-
-            }
-
-            //AliveNeighboursCount-= LifeArray[i, j];
-            //Console.WriteLine(AliveNeighboursCount);
-            if (AliveNeighboursCount >3) return true; else return false;
+            return (NeighboursArray[i, j] > 3);
+            //  return (CountAliveNeighbours(i, j) > 3); // counts not correct...
         }
-
 
         public bool IsBirth(int i, int j)
         {
+            return (CurrentArray[i, j] == Dead) && (NeighboursArray[i, j] == 3);
+        }
 
-            // 3*3 borders
-            int left = i - 1;
-            int right = i + 1;
-            int top = j - 1;
-            int bottom = j + 1;
 
-            int leftPositive = left;
-            int topPositive = top;
-
-            // cycle
-
-            int AliveNeighboursCount = 0;
-
-            for (int k = left; k <= right; k++)
+        public void countNeighbours()
+        {
+            // count neighbours
+            for (int i = 0; i < H; i++)
             {
-                for (int r = top; r <= bottom; r++)
+                for (int j = 0; j < W; j++)
                 {
-                    if (((LifeArray[k, r] == 1)) && (k >= 0) && (r >= 0))//&&((k!= i) && (r!= j)))
-                    {
-                        AliveNeighboursCount++;
-                    }
+                    NeighboursArray[i, j] = CountAliveNeighbours(i, j);
+                   // Console.Write(CountAliveNeighbours(i, j));
                 }
+               // Console.WriteLine();
+            }
+        }
 
 
+        public void initFill3PointsInLine()
+        {
+            CurrentArray[1, 1] = Alive;
+            CurrentArray[2, 1] = Alive;
+            CurrentArray[3, 1] = Alive;
+        }
+
+        public void initFillSquare()
+        {
+            CurrentArray[1, 1] = Alive;
+            CurrentArray[1, 2] = Alive;
+            //  CurrentArray[1, 3] = Alive;
+
+            CurrentArray[2, 1] = Alive;
+            CurrentArray[2, 2] = Alive;
+            //  CurrentArray[2, 3] = Alive;
+
+            //CurrentArray[3, 1] = Alive;
+            //CurrentArray[3, 2] = Alive;
+            //CurrentArray[3, 3] = Alive;
+        }
+
+        public void initSomeColony()
+        {
+            CurrentArray[1, 1] = Alive;
+            CurrentArray[1, 2] = Alive;
+            CurrentArray[1, 3] = Alive;
+
+            CurrentArray[2, 1] = Alive;
+            CurrentArray[2, 2] = Alive;
+            CurrentArray[2, 3] = Alive;
+
+            CurrentArray[3, 1] = Alive;
+            CurrentArray[3, 2] = Alive;
+            CurrentArray[3, 3] = Alive;
+
+            CurrentArray[1, 4] = Alive;
+            CurrentArray[2, 4] = Alive;
+            CurrentArray[3, 4] = Alive;
+
+            CurrentArray[1, 5] = Alive;
+            CurrentArray[2, 5] = Alive;
+            CurrentArray[3, 5] = Alive;
+
+
+
+            CurrentArray[7, 1] = Alive;
+            CurrentArray[7, 2] = Alive;
+            CurrentArray[7, 3] = Alive;
+
+            CurrentArray[8, 4] = Alive;
+            CurrentArray[8, 2] = Alive;
+            CurrentArray[8, 3] = Alive;
+
+        }
+
+
+        public bool NextBool()
+        {
+            // as simple as possible
+            Random r = new Random();
+            return r.Next(0, 2) == 1;
+        }
+
+        public void randomInit()
+        {            
+
+            for (int i = 0; i < CurrentArray.GetLength(0); i++)
+            {
+                for (int j = 0; j < CurrentArray.GetLength(1); j++)
+                {
+                    bool b = NextBool();
+                    if (b) CurrentArray[i, j] = Alive; else CurrentArray[i, j] = Dead;                    
+                }                
+            }
+        }
+
+
+
+        public bool IsApocalypsis()
+        {
+            bool b = true;
+
+            for (int i = 0; i < CurrentArray.GetLength(0); i++)
+            {
+                for (int j = 0; j < CurrentArray.GetLength(1); j++)
+                {
+
+                    if (CurrentArray[i, j] == Alive) b = false;
+                }
             }
 
-            //AliveNeighboursCount-= LifeArray[i, j];
-            //Console.WriteLine(AliveNeighboursCount);
-            if (AliveNeighboursCount == 3) return true; else return false;
+            return b;
+
         }
+
+
+
+
+        public void showArray(char[,] SomeArray)
+        {
+            for (int i = 0; i < SomeArray.GetLength(0); i++)
+            {
+                for (int j = 0; j < SomeArray.GetLength(1); j++)
+                {
+                    Console.Write(SomeArray[i, j]);
+                }
+                Console.WriteLine();
+            }
+        }
+
+
+
+
+
+
+
+        public int CountAliveNeighbours(int i, int j)
+        {
+            // 3*3 borders
+            int left = j - 1;
+            int right = j + 1;
+            int top = i - 1;
+            int bottom = i + 1;
+
+
+            // cycle
+            int AliveNeighboursCount = 0;
+            for (int s = top; s <= bottom; s++)
+            {
+                for (int c = left; c <= right; c++)
+                {
+                    if (
+                           (s >= 0)
+                        && (c >= 0)
+                        && (s < CurrentArray.GetLength(0))
+                        && (c < CurrentArray.GetLength(1))
+                        && (CurrentArray[s, c] == Alive)
+                        )
+                        AliveNeighboursCount++;
+                }
+            }
+            if ((AliveNeighboursCount > 0) && (CurrentArray[i, j] == Alive)) --AliveNeighboursCount;
+            return AliveNeighboursCount;
+        }
+
+
+
+
 
 
 
