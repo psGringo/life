@@ -12,8 +12,8 @@ namespace Life
     {
         static void Main(string[] args)
         {
-            Life life = new Life(20, 10);            
-            string q="N";
+            Life life = new Life(20, 10);
+            string q = "N";
 
             do
             {
@@ -30,7 +30,7 @@ namespace Life
                     Console.WriteLine("Game life started");
                     Console.WriteLine("Stas games development inc. All right reserved");
                     Console.WriteLine();
-                    Console.WriteLine("step "+i.ToString()+"/"+MaxCount.ToString());
+                    Console.WriteLine("step " + i.ToString() + "/" + MaxCount.ToString());
                     if (!life.Next())
                     {
                         Console.WriteLine("Apocalypsis happened");
@@ -45,7 +45,7 @@ namespace Life
                     i++;
                     Thread.Sleep(200);
                 }
-                while (i != MaxCount+1);
+                while (i != MaxCount + 1);
                 Console.WriteLine();
                 Console.WriteLine("Game over");
                 Console.WriteLine("One more game Y/N ?");
@@ -74,7 +74,6 @@ namespace Life
         {
             W = w;
             H = h;
-
             // init arrays
             CurrentArray = new char[H, W];
             NextArray = new char[H, W];
@@ -87,7 +86,6 @@ namespace Life
                     CurrentArray[i, j] = Dead;
                     NextArray[i, j] = Dead;
                 }
-
             }
         }
 
@@ -95,7 +93,6 @@ namespace Life
         public bool Next()
         {
             if (IsApocalypsis()) return false;
-
             countNeighbours();
             NextArray = CurrentArray;
             for (int i = 0; i < H; i++)
@@ -105,20 +102,15 @@ namespace Life
                     if ((IsLonely(i, j) || IsTooClose(i, j))) NextArray[i, j] = Dead;
                     if (IsBirth(i, j)) NextArray[i, j] = Alive;
                 }
-
             }
-            CurrentArray=NextArray;
-
+            CurrentArray = NextArray;
             return true;
         }
 
-
         // 3 rules..
-
         public bool IsLonely(int i, int j)
         {
             return (NeighboursCountArray[i, j] < 2);
-
             //bool result = false;
             //result = CountAliveNeighbours(i, j) < 2; // counts not correct...
             //return result;
@@ -145,9 +137,9 @@ namespace Life
                 for (int j = 0; j < W; j++)
                 {
                     NeighboursCountArray[i, j] = CountAliveNeighbours(i, j);
-                   // Console.Write(CountAliveNeighbours(i, j));
+                    // Console.Write(CountAliveNeighbours(i, j));
                 }
-               // Console.WriteLine();
+                // Console.WriteLine();
             }
         }
 
@@ -196,8 +188,6 @@ namespace Life
             CurrentArray[2, 5] = Alive;
             CurrentArray[3, 5] = Alive;
 
-
-
             CurrentArray[7, 1] = Alive;
             CurrentArray[7, 2] = Alive;
             CurrentArray[7, 3] = Alive;
@@ -208,7 +198,6 @@ namespace Life
 
         }
 
-
         public bool NextBool()
         {
             // as simple as possible
@@ -217,39 +206,29 @@ namespace Life
         }
 
         public void randomInit()
-        {            
-
+        {
             for (int i = 0; i < CurrentArray.GetLength(0); i++)
             {
                 for (int j = 0; j < CurrentArray.GetLength(1); j++)
                 {
                     bool b = NextBool();
-                    if (b) CurrentArray[i, j] = Alive; else CurrentArray[i, j] = Dead;                    
-                }                
+                    if (b) CurrentArray[i, j] = Alive; else CurrentArray[i, j] = Dead;
+                }
             }
         }
-
-
 
         public bool IsApocalypsis()
         {
             bool b = true;
-
             for (int i = 0; i < CurrentArray.GetLength(0); i++)
             {
                 for (int j = 0; j < CurrentArray.GetLength(1); j++)
                 {
-
                     if (CurrentArray[i, j] == Alive) b = false;
                 }
             }
-
             return b;
-
         }
-
-
-
 
         public void showArray(char[,] SomeArray)
         {
@@ -263,12 +242,6 @@ namespace Life
             }
         }
 
-
-
-
-
-
-
         public int CountAliveNeighbours(int i, int j)
         {
             // 3*3 borders
@@ -276,8 +249,6 @@ namespace Life
             int right = j + 1;
             int top = i - 1;
             int bottom = i + 1;
-
-
             // cycle
             int AliveNeighboursCount = 0;
             for (int s = top; s <= bottom; s++)
@@ -297,13 +268,6 @@ namespace Life
             if ((AliveNeighboursCount > 0) && (CurrentArray[i, j] == Alive)) --AliveNeighboursCount;
             return AliveNeighboursCount;
         }
-
-
-
-
-
-
-
 
     }
 
