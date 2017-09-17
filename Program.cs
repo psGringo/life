@@ -12,30 +12,23 @@ namespace Life
     {
         static void Main(string[] args)
         {
-            Life life = new Life(20, 10);
-            
-
+            Life life = new Life(20, 10);            
             string q="N";
 
             do
             {
-
                 int i = 1;
                 int MaxCount = 100;
-
                 //life.randomInit();
-                life.initSomeColony();
+                life.initFillSomeColony();
                 //life.showArray(life.CurrentArray);
                 //life.initFill3PointsInLine(); // test case
-                //life.initFillSquare(); // test case
-              
-
+                //life.initFillSquare(); // test case              
                 do
                 {
                     Console.Clear();
                     Console.WriteLine("Game life started");
                     Console.WriteLine("Stas games development inc. All right reserved");
-
                     Console.WriteLine();
                     Console.WriteLine("step "+i.ToString()+"/"+MaxCount.ToString());
                     if (!life.Next())
@@ -51,21 +44,16 @@ namespace Life
                     for (int k = 0; k < life.W; k++) Console.Write("-");
                     i++;
                     Thread.Sleep(200);
-
                 }
                 while (i != MaxCount+1);
-
                 Console.WriteLine();
                 Console.WriteLine("Game over");
                 Console.WriteLine("One more game Y/N ?");
                 q = Convert.ToString(Console.ReadLine());
             }
             while (q == "Y");
-
-
             Console.WriteLine("Stas games development inc. All right reserved");
             Console.Read();
-
         }
     }
 
@@ -80,9 +68,7 @@ namespace Life
 
         public char[,] CurrentArray;
         public char[,] NextArray;
-        public int[,] NeighboursArray;
-
-
+        public int[,] NeighboursCountArray;
 
         public Life(int w, int h)
         {
@@ -92,8 +78,7 @@ namespace Life
             // init arrays
             CurrentArray = new char[H, W];
             NextArray = new char[H, W];
-            NeighboursArray = new int[H, W];
-
+            NeighboursCountArray = new int[H, W];
             // fill them dead
             for (int i = 0; i < H; i++)
             {
@@ -132,7 +117,7 @@ namespace Life
 
         public bool IsLonely(int i, int j)
         {
-            return (NeighboursArray[i, j] < 2);
+            return (NeighboursCountArray[i, j] < 2);
 
             //bool result = false;
             //result = CountAliveNeighbours(i, j) < 2; // counts not correct...
@@ -142,13 +127,13 @@ namespace Life
 
         public bool IsTooClose(int i, int j)
         {
-            return (NeighboursArray[i, j] > 3);
+            return (NeighboursCountArray[i, j] > 3);
             //  return (CountAliveNeighbours(i, j) > 3); // counts not correct...
         }
 
         public bool IsBirth(int i, int j)
         {
-            return (CurrentArray[i, j] == Dead) && (NeighboursArray[i, j] == 3);
+            return (CurrentArray[i, j] == Dead) && (NeighboursCountArray[i, j] == 3);
         }
 
 
@@ -159,7 +144,7 @@ namespace Life
             {
                 for (int j = 0; j < W; j++)
                 {
-                    NeighboursArray[i, j] = CountAliveNeighbours(i, j);
+                    NeighboursCountArray[i, j] = CountAliveNeighbours(i, j);
                    // Console.Write(CountAliveNeighbours(i, j));
                 }
                // Console.WriteLine();
@@ -189,7 +174,7 @@ namespace Life
             //CurrentArray[3, 3] = Alive;
         }
 
-        public void initSomeColony()
+        public void initFillSomeColony()
         {
             CurrentArray[1, 1] = Alive;
             CurrentArray[1, 2] = Alive;

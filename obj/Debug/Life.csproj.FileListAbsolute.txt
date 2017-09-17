@@ -4,3 +4,9 @@ C:\C#\MyC#StudyProjects\15_WithDenisZubov\Life\Life\bin\Debug\Life.pdb
 C:\C#\MyC#StudyProjects\15_WithDenisZubov\Life\Life\obj\Debug\Life.csprojResolveAssemblyReference.cache
 C:\C#\MyC#StudyProjects\15_WithDenisZubov\Life\Life\obj\Debug\Life.exe
 C:\C#\MyC#StudyProjects\15_WithDenisZubov\Life\Life\obj\Debug\Life.pdb
+C:\C#\SergMeetings\life\bin\Debug\Life.exe.config
+C:\C#\SergMeetings\life\obj\Debug\Life.exe
+C:\C#\SergMeetings\life\obj\Debug\Life.pdb
+C:\C#\SergMeetings\life\bin\Debug\Life.exe
+C:\C#\SergMeetings\life\bin\Debug\Life.pdb
+C:\C#\SergMeetings\life\obj\Debug\Life.csprojResolveAssemblyReference.cache
