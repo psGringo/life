@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
+using System.IO;
+
+
 
 
 namespace Life
@@ -12,51 +15,73 @@ namespace Life
     {
         static void Main(string[] args)
         {
-            Life life = new Life(20, 10);
-            string q = "N";
+
+            string[] fileStrings = File.ReadAllLines("LifeGameInitial.txt");
+            //int Height = File.ReadAllLines("LifeGameInitial.txt").Length;
+            int Height = File.ReadLines(@"LifeGameInitial.txt").Count();
+            int Width = File.ReadAllLines(@"LifeGameInitial.txt")[0].Length;
+                  
+            
+            Life life = new Life(Height, Width,true);
+            string consoleAnswer = "N";
+
+            VladBolotin vb = new VladBolotin();
 
             do
             {
                 int i = 1;
-                int MaxCount = 100;
-                //life.randomInit();
-                life.initFillSomeColony();
+                int MaxCount = 100;                
+                
+                Console.WriteLine("Game life started");
+                Console.WriteLine("How many steps in the game ?");
+                MaxCount = Convert.ToInt32(Console.ReadLine());
+                
+
+                //life.initCurrentArray.initFillSomeColony(); // test case 
+                //life.initCurrentArray.initFill3PointsInLine(); // test case
+                if (life.IsInitFromFile) life.initCurrentArray.FromFile();
+                else life.initCurrentArray.FillSomeColony();
+
+                vb.initFillAllZero();
+                vb.InitState();
+
                 //life.showArray(life.CurrentArray);
-                //life.initFill3PointsInLine(); // test case
-                //life.initFillSquare(); // test case              
+                //Console.ReadLine();
+
                 do
                 {
-                    Console.Clear();
-                    Console.WriteLine("Game life started");
-                    Console.WriteLine("Stas games development inc. All right reserved");
-                    Console.WriteLine();
+                    Console.Clear();                 
                     Console.WriteLine("step " + i.ToString() + "/" + MaxCount.ToString());
                     if (!life.Next())
                     {
                         Console.WriteLine("Apocalypsis happened");
                         break;
                     }
-
+                    vb.NextState();
+                    Console.WriteLine("Stas                        Vlad");
                     for (int k = 0; k < life.W; k++) Console.Write("-");
                     Console.WriteLine();
-                    life.showArray(life.NextArray);
+                    //life.showArray(life.NextArray);
+                    life.showBothArrays(life.NextArray,vb.LifeArrayNextStep);
                     Console.WriteLine();
                     for (int k = 0; k < life.W; k++) Console.Write("-");
-                    i++;
-                    Thread.Sleep(200);
+                    i++;                    
+                    
+                    Thread.Sleep(6000);
                 }
                 while (i != MaxCount + 1);
                 Console.WriteLine();
                 Console.WriteLine("Game over");
                 Console.WriteLine("One more game Y/N ?");
-                q = Convert.ToString(Console.ReadLine());
+                consoleAnswer = Convert.ToString(Console.ReadLine());
             }
-            while (q == "Y");
+            while (consoleAnswer == "Y");
             Console.WriteLine("Stas games development inc. All right reserved");
             Console.Read();
+    
         }
-    }
 
+    }
 
     class Life
     {
@@ -65,17 +90,25 @@ namespace Life
 
         public int W { get; set; }
         public int H { get; set; }
+        public bool IsInitFromFile { get; set; }
 
         public char[,] CurrentArray;
+        public InitCurrentArray initCurrentArray;
         public char[,] NextArray;
         public int[,] NeighboursCountArray;
+        
 
-        public Life(int w, int h)
+        public Life(int h, int w, bool AIsInitFromFile)
         {
             W = w;
             H = h;
+          
             // init arrays
             CurrentArray = new char[H, W];
+            initCurrentArray = new InitCurrentArray(CurrentArray, Alive, Dead);
+            IsInitFromFile = AIsInitFromFile;
+            if (IsInitFromFile) { initCurrentArray.H = H; initCurrentArray.W = W; }
+
             NextArray = new char[H, W];
             NeighboursCountArray = new int[H, W];
             // fill them dead
@@ -88,8 +121,6 @@ namespace Life
                 }
             }
         }
-
-
         public bool Next()
         {
             if (IsApocalypsis()) return false;
@@ -107,20 +138,17 @@ namespace Life
             return true;
         }
 
+
         // 3 rules..
         public bool IsLonely(int i, int j)
         {
             return (NeighboursCountArray[i, j] < 2);
-            //bool result = false;
-            //result = CountAliveNeighbours(i, j) < 2; // counts not correct...
-            //return result;
         }
 
 
         public bool IsTooClose(int i, int j)
         {
             return (NeighboursCountArray[i, j] > 3);
-            //  return (CountAliveNeighbours(i, j) > 3); // counts not correct...
         }
 
         public bool IsBirth(int i, int j)
@@ -142,81 +170,6 @@ namespace Life
                 // Console.WriteLine();
             }
         }
-
-
-        public void initFill3PointsInLine()
-        {
-            CurrentArray[1, 1] = Alive;
-            CurrentArray[2, 1] = Alive;
-            CurrentArray[3, 1] = Alive;
-        }
-
-        public void initFillSquare()
-        {
-            CurrentArray[1, 1] = Alive;
-            CurrentArray[1, 2] = Alive;
-            //  CurrentArray[1, 3] = Alive;
-
-            CurrentArray[2, 1] = Alive;
-            CurrentArray[2, 2] = Alive;
-            //  CurrentArray[2, 3] = Alive;
-
-            //CurrentArray[3, 1] = Alive;
-            //CurrentArray[3, 2] = Alive;
-            //CurrentArray[3, 3] = Alive;
-        }
-
-        public void initFillSomeColony()
-        {
-            CurrentArray[1, 1] = Alive;
-            CurrentArray[1, 2] = Alive;
-            CurrentArray[1, 3] = Alive;
-
-            CurrentArray[2, 1] = Alive;
-            CurrentArray[2, 2] = Alive;
-            CurrentArray[2, 3] = Alive;
-
-            CurrentArray[3, 1] = Alive;
-            CurrentArray[3, 2] = Alive;
-            CurrentArray[3, 3] = Alive;
-
-            CurrentArray[1, 4] = Alive;
-            CurrentArray[2, 4] = Alive;
-            CurrentArray[3, 4] = Alive;
-
-            CurrentArray[1, 5] = Alive;
-            CurrentArray[2, 5] = Alive;
-            CurrentArray[3, 5] = Alive;
-
-            CurrentArray[7, 1] = Alive;
-            CurrentArray[7, 2] = Alive;
-            CurrentArray[7, 3] = Alive;
-
-            CurrentArray[8, 4] = Alive;
-            CurrentArray[8, 2] = Alive;
-            CurrentArray[8, 3] = Alive;
-
-        }
-
-        public bool NextBool()
-        {
-            // as simple as possible
-            Random r = new Random();
-            return r.Next(0, 2) == 1;
-        }
-
-        public void randomInit()
-        {
-            for (int i = 0; i < CurrentArray.GetLength(0); i++)
-            {
-                for (int j = 0; j < CurrentArray.GetLength(1); j++)
-                {
-                    bool b = NextBool();
-                    if (b) CurrentArray[i, j] = Alive; else CurrentArray[i, j] = Dead;
-                }
-            }
-        }
-
         public bool IsApocalypsis()
         {
             bool b = true;
@@ -230,17 +183,38 @@ namespace Life
             return b;
         }
 
-        public void showArray(char[,] SomeArray)
+        public void showArray(char[,] AArray)
         {
-            for (int i = 0; i < SomeArray.GetLength(0); i++)
+            for (int i = 0; i < AArray.GetLength(0); i++)
             {
-                for (int j = 0; j < SomeArray.GetLength(1); j++)
+                for (int j = 0; j < AArray.GetLength(1); j++)
                 {
-                    Console.Write(SomeArray[i, j]);
+                    Console.Write(AArray[i, j]);
                 }
                 Console.WriteLine();
             }
         }
+
+        public void showBothArrays(char[,] AArray, int[,] VladArray)
+        {
+            for (int i = 0; i < AArray.GetLength(0); i++)
+            {
+                for (int j = 0; j < AArray.GetLength(1); j++)
+                {
+                    Console.Write(AArray[i, j]);
+                                   
+                }
+                Console.Write("      ");
+                for (int k = 0; k < VladArray.GetLength(1); k++)
+                {
+                    if (VladArray[i+1, k] == 1) Console.Write(Alive);
+                    else Console.Write(Dead);
+                }
+                Console.WriteLine();
+            }
+        }
+
+
 
         public int CountAliveNeighbours(int i, int j)
         {
